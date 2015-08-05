@@ -4,6 +4,7 @@ WRITTEN in Ruby 2.2.1!
 
 Usage examples:
 
+```ruby
 require 'db'
 
 db = DB::Database.new :test
@@ -51,3 +52,4 @@ db = DB::Database.use :corporation
 #To drop a table:
 
 db.drop_table :users
+```
