@@ -14,7 +14,7 @@ db.create_table :persons, name: "String", age: "Fixnum", sex: "String"
 #on basis of table schemas. The agreement is that a table name must be given
 #in lower case and represent a plural noun; the name of a corresponding class
 #must be a singular capitilized noun. So, having a table called "persons",
-#it's possible to define related to it class like this: 
+#it's possible to define related to it class just like this: 
 
 class Person < Record
   scope :women, -> { where sex: "f" }
