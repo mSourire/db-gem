@@ -64,3 +64,36 @@ DB::Database.drop :test
 #If there are several databases, it's possible to choose one of them:
 db = DB::Database.use :corporation
 ```
+
+
+####### SAMPLE TABLE FILLING
+
+YAML is used for tables markup.
+
+```yaml
+---
+1:
+  :name: Olga
+  :age: 16
+  :sex: f
+2:
+  :name: Pavel
+  :age: 24
+  :sex: m
+3:
+  :name: Vitaliy
+  :age: 35
+  :sex: m
+4:
+  :name: Valentina
+  :age: 30
+  :sex: f
+5:
+  :name: Igor
+  :age: 14
+  :sex: m
+7:
+  :name: Mihail
+  :age: 25
+  :sex: m
+```
