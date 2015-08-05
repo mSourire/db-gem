@@ -31,11 +31,11 @@ Person.all
 
 Person.find 3
 
+Person.find(1).destroy
+
 Person.find(4).update age: 27
 
 Person.where sex: "f"
-
-Person.find(4).destroy
 
 #or the same, using scopes:
 
