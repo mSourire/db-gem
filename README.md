@@ -35,11 +35,11 @@ Person.find(4).update age: 27
 
 Person.where sex: "f"
 
+Person.find(4).destroy
+
 #or the same, using scopes:
 
 Person.women
-
-Person.find(4).destroy
 
 #The database can de deleted:
 
