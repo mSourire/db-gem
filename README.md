@@ -1,4 +1,4 @@
-Provides a simple database interfac with an elementary ActiveRecord-like functional
+Provides a simple database interface with an elementary ActiveRecord-like functional
 written in Ruby 2.2.1.
 
 Usage examples:
