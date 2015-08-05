@@ -10,8 +10,11 @@ require 'db'
 db = DB::Database.new :test
 db.create_table :persons, name: "String", age: "Fixnum", sex: "String"
 
-#Instance, class variables and attribute accessors are defined dynamically on basis of table schemas
-#So, it's possible to define classes like this, to start using the "database" and work with data:
+#Instance, class variables and attribute accessors are defined dynamically 
+#on basis of table schemas. The agreement is that a table name must be given
+#in lower case and represent a plural noun; the name of a corresponding class
+#must be a singular capitilized noun. So, having a table called "persons",
+#it's possible to define related to it class like this: 
 
 class Person < Record
   scope :women, -> { where sex: "f" }
