@@ -1,18 +1,19 @@
-module DB
+require 'yaml'
 
-  require 'yaml'
+module DB
 
   require 'tools/fscommunicator'
   require 'tools/validator'
   require 'tools/scoper'
+  require 'db/custom_exceptions'
+  require 'db/record/selection'
   require 'db/record'
 
+  $default_path = "/tmp/"
+
   class Database
-    extend  FSCommunicator
-    include FSCommunicator
 
-    def initialize db_name
-
+    def initialize(db_name)
       if self.class.exists? db_name
         load_db db_name
       else
@@ -28,31 +29,31 @@ module DB
     end
 
     def drop_table table_name
-      remove_file($db_name, table_name)
-      remove_file($db_name, table_name.to_s + ".schema")
+      FSCommunicator.remove_file($db_name, table_name)
+      FSCommunicator.remove_file($db_name, table_name.to_s + ".schema")
     end
 
     def self.use db_name
       if self.exists? db_name
         self.new db_name
       else
-        puts "No such database"
+        raise CustomExceptions::NoSuchDatabaseException.new(db_name)
       end
     end
 
     def self.exists? db_name
-      dir_exists?(db_name)
+      FSCommunicator.dir_exists?(db_name)
     end
 
     def self.drop db_name
-      remove_directory db_name
+      FSCommunicator.remove_directory db_name
     end
 
     private
 
     def create_db db_name
       $db_name = db_name
-      create_directory($db_name)
+      FSCommunicator.create_directory($db_name)
     end
 
     def load_db db_name
@@ -65,13 +66,13 @@ module DB
 
     def write_table table_name
       table_path = get_file_path(table_name)
-      write_file(table_path, :w, "---\n")
+      FSCommunicator.write_file(table_path, :w, "---\n")
     end
 
     def write_table_schema table_name, data
       table_schema_name = table_name + ".schema"
       table_schema_path = get_file_path(table_schema_name)
-      write_file(table_schema_path, :w, data.to_yaml)
+      FSCommunicator.write_file(table_schema_path, :w, data.to_yaml)
     end
 
     def construct_table_schema data

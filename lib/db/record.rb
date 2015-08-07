@@ -1,7 +1,6 @@
 class Record
   include Validator
-  include FSCommunicator
-  extend FSCommunicator
+  extend Selection
   extend Scoper
   
   def initialize attributes = {}
@@ -23,22 +22,6 @@ class Record
     end
   end
 
-  def self.set_class_variables
-    t_name = self.name.downcase + "s"
-    t_path = db_path + t_name
-    t_sch_path = t_path + ".schema"
-    t_schema = read_yaml_file(t_sch_path)
-
-    new_variables = {:@@table_name => t_name, 
-                     :@@table_path => t_path,
-                     :@@table_schema_path => t_sch_path,
-                     :@@table_schema => t_schema}
-
-    new_variables.each{ |var, val| class_variable_set(var, val) }
-
-    set_class_attr_accessor(new_variables.keys)
-  end
-
   def save
     if !instance_variable_get(:@id).nil?
       record = construct_record
@@ -53,6 +36,11 @@ class Record
     end
   end
 
+  def self.create attributes = {}
+    new_record = self.new attributes
+    new_record.save
+  end
+
   def update attributes
     raise ArgumentError, "Provide correct attribute value (hash)" if !attributes.is_a?(Hash)
 
@@ -65,67 +53,25 @@ class Record
 
   def destroy
     table_path = get_table_path
-    data = self.class.read_yaml_file(table_path)
+    data = FSCommunicator.read_yaml_file(table_path)
     id = instance_variable_get(:@id)
     self.class.write_table(table_path, data.reject{|k| k == id})
   end
 
-  def self.find id
-    raise ArgumentError, "Provide correct id (integer)" if !id.is_a?(Fixnum)
+  def self.set_class_variables
+    t_name = self.name.downcase + "s"
+    t_path = db_path + t_name
+    t_sch_path = t_path + ".schema"
+    t_schema = FSCommunicator.read_yaml_file(t_sch_path)
 
-    set_class_variables
-    data = read_yaml_file(table_path)
+    new_variables = {:@@table_name => t_name, 
+                     :@@table_path => t_path,
+                     :@@table_schema_path => t_sch_path,
+                     :@@table_schema => t_schema}
 
-    result = data[id]
-    result.nil? ? nil : self.new({:id => id}.merge(result))
-  end
+    new_variables.each{ |var, val| class_variable_set(var, val) }
 
-  def self.all
-    set_class_variables
-    data = read_yaml_file(table_path)
-    result = []
-    data.each{ |record| result << self.new([record].to_h) }
-    result
-  end
-
-  def self.create attributes = {}
-    new_record = self.new attributes
-    new_record.save
-  end
-
-  def self.where conditions
-    raise ArgumentError, "Provide conditions (hash)" if !conditions.is_a?(Hash)
-
-    set_class_variables
-    data = read_yaml_file(table_path)
-
-    checks = create_check(conditions)
-    result = perform_check data, checks
-
-    result.map!{ |e| self.new e}
-  end
-
-  def self.perform_check data, checks
-    data ||= {}
-    result = []
-    data.each_pair do |id, record_data|
-      checks.each do |check|
-        unless check.call(record_data)
-          break
-        else
-          checks.last == check ? result << {id => record_data} : next
-        end
-      end
-    end
-    result
-  end
-
-  def self.create_check conditions
-    checks = []
-    conditions.each_pair do |key, value|
-      checks << lambda { |record_data| record_data[key] == value }
-    end
-    checks    
+    set_class_attr_accessor(new_variables.keys)
   end
 
   def self.set_class_attr_accessor variables
@@ -139,7 +85,7 @@ class Record
 
   def self.update_schema current_id
     table_schema[:last_id] = current_id
-    write_file(table_schema_path, :w, table_schema.to_yaml)
+    FSCommunicator.write_file(table_schema_path, :w, table_schema.to_yaml)
   end
 
   def self.db_path
@@ -147,7 +93,7 @@ class Record
   end
 
   def self.write_table table_path, data
-    write_file(table_path, :w, data.to_yaml)
+    FSCommunicator.write_file(table_path, :w, data.to_yaml)
   end
 
   private
@@ -178,12 +124,12 @@ class Record
   end
 
   def add_new_record data
-    write_file(get_table_path, :a, data.to_yaml.gsub("---\n", ''))
+    FSCommunicator.write_file(get_table_path, :a, data.to_yaml.gsub("---\n", ''))
   end
 
   def update_record data
     table_path = get_table_path
-    table_data = self.class.read_yaml_file(table_path)
+    table_data = FSCommunicator.read_yaml_file(table_path)
     id = data.keys.first
     table_data[id] = data[id]
     self.class.write_table(table_path, table_data)
